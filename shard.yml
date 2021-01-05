@@ -1,12 +1,12 @@
 name: redis_cache
-version: 0.1.0
+version: 0.1.1
 
 authors:
   - Anton Maminov <anton.maminov@gmail.com>
 
 dependencies:
   cache:
-    github: mamantoha/cache
+    github: crystal-cache/cache
     version: ~> 0.12.0
   redis:
     github: stefanwille/crystal-redis
