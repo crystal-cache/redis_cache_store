@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/crystal-cache/redis_cache.svg?branch=main)](https://travis-ci.org/crystal-cache/redis_cache)
 
-A [cache](https://github.com/mamantoha/cache) store implementation that stores data in Redis
+A [cache](https://github.com/crystal-cache/cache) store implementation that stores data in Redis
 
 ## Installation
 
