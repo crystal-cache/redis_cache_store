@@ -4,7 +4,7 @@ require "redis"
 module Cache
   # A cache store implementation which stores data in Redis.
   #
-  # ```crystal
+  # ```
   # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute)
   # cache.fetch("today") do
   #   Time.utc.day_of_week
@@ -17,7 +17,7 @@ module Cache
   #
   # If you need to connect to a remote server or a different port, try:
   #
-  # ```crystal
+  # ```
   # redis = Redis.new(host: "10.0.1.1", port: 6380, password: "my-secret-pw", database: "my-database")
   # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, cache: redis)
   # ```
