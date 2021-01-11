@@ -5,7 +5,7 @@ module Cache
   # A cache store implementation which stores data in Redis.
   #
   # ```crystal
-  # cache = Cache::RedisStore(String, String).new(expires_in: 1.minute)
+  # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute)
   # cache.fetch("today") do
   #   Time.utc.day_of_week
   # end
@@ -19,9 +19,9 @@ module Cache
   #
   # ```crystal
   # redis = Redis.new(host: "10.0.1.1", port: 6380, password: "my-secret-pw", database: "my-database")
-  # cache = Cache::RedisStore(String, String).new(expires_in: 1.minute, cache: redis)
+  # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, cache: redis)
   # ```
-  struct RedisStore(K, V) < Store(K, V)
+  struct RedisCacheStore(K, V) < Store(K, V)
     @cache : Redis | Redis::PooledClient
 
     def initialize(@expires_in : Time::Span, @cache = Redis.new)

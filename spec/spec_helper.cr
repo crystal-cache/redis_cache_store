@@ -1,2 +1,2 @@
 require "spec"
-require "../src/redis_cache"
+require "../src/redis_cache_store"

@@ -1,7 +1,7 @@
-# Cache::RedisStore
+# Cache::RedisCacheStore
 
-[![Build Status](https://travis-ci.org/crystal-cache/redis_cache.svg?branch=main)](https://travis-ci.org/crystal-cache/redis_cache)
-[![GitHub release](https://img.shields.io/github/release/crystal-cache/redis_cache.svg)](https://github.com/crystal-cache/redis_cache/releases)
+[![Build Status](https://travis-ci.org/crystal-cache/redis_cache_store.svg?branch=main)](https://travis-ci.org/crystal-cache/redis_cache_store)
+[![GitHub release](https://img.shields.io/github/release/crystal-cache/redis_cache_store.svg)](https://github.com/crystal-cache/redis_cache_store/releases)
 
 A [cache](https://github.com/crystal-cache/cache) store implementation that stores data in Redis
 
@@ -11,8 +11,8 @@ A [cache](https://github.com/crystal-cache/cache) store implementation that stor
 
    ```yaml
    dependencies:
-     redis_cache:
-       github: crystal-cache/redis_cache
+     redis_cache_store:
+       github: crystal-cache/redis_cache_store
    ```
 
 2. Run `shards install`
@@ -20,13 +20,13 @@ A [cache](https://github.com/crystal-cache/cache) store implementation that stor
 ## Usage
 
 ```crystal
-require "redis_cache"
+require "redis_cache_store"
 ```
 
 It's important to note that Redis cache value must be string.
 
 ```crystal
-cache = Cache::RedisStore(String, String).new(expires_in: 1.minute)
+cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute)
 cache.fetch("today") do
   Time.utc.day_of_week
 end
@@ -40,12 +40,12 @@ If you need to connect to a remote server or a different port, try:
 
 ```crystal
 redis = Redis.new(host: "10.0.1.1", port: 6380, password: "my-secret-pw", database: "my-database")
-cache = Cache::RedisStore(String, String).new(expires_in: 1.minute, cache: redis)
+cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, cache: redis)
 ```
 
 ## Contributing
 
-1. Fork it (<https://github.com/crystal-cache/redis_cache/fork>)
+1. Fork it (<https://github.com/crystal-cache/redis_cache_store/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
