@@ -12,6 +12,10 @@ dependencies:
     github: stefanwille/crystal-redis
     version: ~> 2.6.0
 
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    branch: develop
 
 crystal: ">= 0.35.0"
 
