@@ -1,6 +1,6 @@
 # Cache::RedisCacheStore
 
-[![Build Status](https://travis-ci.org/crystal-cache/redis_cache_store.svg?branch=main)](https://travis-ci.org/crystal-cache/redis_cache_store)
+![Crystal CI](https://github.com/crystal-cache/redis_cache_store/workflows/Crystal%20CI/badge.svg)
 [![GitHub release](https://img.shields.io/github/release/crystal-cache/redis_cache_store.svg)](https://github.com/crystal-cache/redis_cache_store/releases)
 
 A [cache](https://github.com/crystal-cache/cache) store implementation that stores data in Redis
