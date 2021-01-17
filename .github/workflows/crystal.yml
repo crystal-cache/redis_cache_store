@@ -35,8 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        crystal: ["crystallang/crystal", "crystallang/crystal:nightly"]
-    container: ${{ matrix.crystal }}
+        crystal: [latest, nightly]
     services:
       # Label used to access the service container
       redis:
@@ -47,7 +46,14 @@ jobs:
           --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
     steps:
+      - name: Install Crystal
+        uses: oprypin/install-crystal@v1
+        with:
+          crystal: ${{ matrix.crystal }}
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -58,8 +64,3 @@ jobs:
 
       - name: Run tests
         run: crystal spec
-        env:
-          # The hostname used to communicate with the Redis service container
-          REDIS_HOST: redis
-          # The default Redis port
-          REDIS_PORT: 6379
