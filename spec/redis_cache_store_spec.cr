@@ -99,6 +99,15 @@ describe Cache do
       value.should eq("bar")
     end
 
+    it "rewrite value" do
+      store = Cache::RedisCacheStore(String, String).new(12.hours)
+      store.write("foo", "bar", expires_in: 1.minute)
+      store.write("foo", "baz", expires_in: 1.minute)
+
+      value = store.read("foo")
+      value.should eq("baz")
+    end
+
     it "read" do
       store = Cache::RedisCacheStore(String, String).new(12.hours)
       store.write("foo", "bar")
