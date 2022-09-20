@@ -24,7 +24,7 @@ module Cache
   struct RedisCacheStore(K, V) < Store(K, V)
     @cache : Redis | Redis::PooledClient
 
-    def initialize(@expires_in : Time::Span, @cache = Redis.new)
+    def initialize(@expires_in : Time::Span, @cache = Redis::PooledClient.new)
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
