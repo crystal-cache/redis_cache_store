@@ -10,13 +10,13 @@ dependencies:
     version: ">= 0.12.0"
   redis:
     github: stefanwille/crystal-redis
-    version: ">= 2.6.0"
+    version: ">= 2.8.0"
 
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
     branch: develop
 
-crystal: ">= 0.35.0"
+crystal: ">= 1.0.0"
 
 license: MIT
