@@ -193,5 +193,15 @@ describe Cache do
 
       value.should eq("1")
     end
+
+    context "with namespace" do
+      it "write" do
+        store = Cache::RedisCacheStore(String, String).new(12.hours, namespace: "myapp-cache")
+        store.write("foo", "bar", expires_in: 1.minute)
+
+        value = store.fetch("foo") { "bar" }
+        value.should eq("bar")
+      end
+    end
   end
 end

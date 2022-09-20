@@ -24,35 +24,51 @@ module Cache
   struct RedisCacheStore(K, V) < Store(K, V)
     @cache : Redis | Redis::PooledClient
 
-    def initialize(@expires_in : Time::Span, @cache = Redis::PooledClient.new)
+    # Creates a new Redis cache store.
+    #
+    # No `namespace` is set by default. Provide one if the Redis cache
+    # server is shared with other apps:
+    #
+    # ```
+    # Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
+    # ```
+    def initialize(@expires_in : Time::Span, @cache = Redis::PooledClient.new, @namespace : String? = nil)
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
-      @cache.set(key, value, expires_in.total_seconds.to_i)
+      @cache.set(namespace_key(key), value, expires_in.total_seconds.to_i)
     end
 
     private def read_impl(key : K)
-      @cache.get(key)
+      @cache.get(namespace_key(key))
     end
 
     def delete(key : K) : Bool
-      @cache.del(key) == 1_i64
+      @cache.del(namespace_key(key)) == 1_i64
     end
 
     def exists?(key : K) : Bool
-      @cache.exists(key) == 1
+      @cache.exists(namespace_key(key)) == 1
     end
 
     def increment(key : K, amount = 1)
-      @cache.incrby(key, amount)
+      @cache.incrby(namespace_key(key), amount)
     end
 
     def decrement(key : K, amount = 1)
-      @cache.decrby(key, amount)
+      @cache.decrby(namespace_key(key), amount)
     end
 
     def clear
       @cache.flushdb
+    end
+
+    private def namespace_key(key : String) : String
+      if @namespace
+        "#{@namespace}:#{key}"
+      else
+        key
+      end
     end
   end
 end
