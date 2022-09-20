@@ -32,6 +32,13 @@ cache.fetch("today") do
 end
 ```
 
+No `namespace` is set by default. Provide one if the Redis cache
+server is shared with other apps:
+
+```crystal
+Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
+```
+
 This assumes Redis was started with a default configuration, and is listening on localhost, port 6379.
 
 You can connect to Redis by instantiating the `Redis` or `Redis::PooledClient` class.
