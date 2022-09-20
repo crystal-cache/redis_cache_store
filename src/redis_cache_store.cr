@@ -63,8 +63,8 @@ module Cache
     end
 
     def clear
-      if @namespace
-        delete_matched("*", @namespace.not_nil!)
+      if (namespace = @namespace)
+        delete_matched("*", namespace)
       else
         @cache.flushdb
       end
