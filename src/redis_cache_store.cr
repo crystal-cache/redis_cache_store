@@ -24,6 +24,9 @@ module Cache
   struct RedisCacheStore(K, V) < Store(K, V)
     @cache : Redis | Redis::PooledClient
 
+    # The maximum number of entries to receive per SCAN call.
+    SCAN_BATCH_SIZE = 1000
+
     # Creates a new Redis cache store.
     #
     # No `namespace` is set by default. Provide one if the Redis cache
@@ -60,7 +63,28 @@ module Cache
     end
 
     def clear
-      @cache.flushdb
+      if @namespace
+        delete_matched("*", @namespace.not_nil!)
+      else
+        @cache.flushdb
+      end
+    end
+
+    # `matcher` is Redis KEYS glob pattern.
+    #
+    # See https://redis.io/commands/keys/ for details
+    private def delete_matched(matcher : String, namespace : String)
+      parent = namespace_key(matcher)
+      cursor = "0"
+
+      loop do
+        # Fetch keys in batches using SCAN to avoid blocking the Redis server.
+        cursor, keys = @cache.scan(cursor, match: parent, count: SCAN_BATCH_SIZE)
+
+        @cache.del(keys)
+
+        break if cursor == "0"
+      end
     end
 
     private def namespace_key(key : String) : String
