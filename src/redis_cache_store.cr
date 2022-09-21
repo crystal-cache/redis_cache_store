@@ -63,6 +63,16 @@ module Cache
       @cache.exists(key) == 1
     end
 
+    # Clear the entire cache on all Redis servers.
+    # Safe to use on shared servers if the cache is namespaced.
+    def clear
+      if (namespace = @namespace)
+        delete_matched("*", namespace)
+      else
+        @cache.flushdb
+      end
+    end
+
     # Increment a cached value. This method uses the Redis incr atomic operator.
     #
     # Calling it on a value not stored will initialize that value to zero.
@@ -87,16 +97,6 @@ module Cache
 
     private def write_key_expiry(key : K)
       @cache.expire(key, @expires_in.total_seconds.to_i)
-    end
-
-    # Clear the entire cache on all Redis servers.
-    # Safe to use on shared servers if the cache is namespaced.
-    def clear
-      if (namespace = @namespace)
-        delete_matched("*", namespace)
-      else
-        @cache.flushdb
-      end
     end
 
     # `matcher` is Redis KEYS glob pattern.
