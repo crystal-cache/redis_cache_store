@@ -5,7 +5,14 @@ module Cache
   # A cache store implementation which stores data in Redis.
   #
   # ```
-  # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute)
+  # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
+  #
+  # # Fetches data from the Redis, using "myapp-cache:today" key. If there is data in
+  # # the REdis with the given key, then that data is returned.
+  # #
+  # # If there is no such data in the Redis (a cache miss or expired), then
+  # # block will be written to the Redis under the given cache key, and that
+  # # return value will be returned.
   # cache.fetch("today") do
   #   Time.utc.day_of_week
   # end
@@ -25,7 +32,9 @@ module Cache
     @cache : Redis | Redis::PooledClient
 
     # The maximum number of entries to receive per SCAN call.
-    SCAN_BATCH_SIZE = 1000
+    private SCAN_BATCH_SIZE = 1000
+
+    getter expires_in, namespace
 
     # Creates a new Redis cache store.
     #
@@ -54,14 +63,34 @@ module Cache
       @cache.exists(key) == 1
     end
 
+    # Increment a cached value. This method uses the Redis incr atomic operator.
+    #
+    # Calling it on a value not stored will initialize that value to zero.
     def increment(key : K, amount = 1)
-      @cache.incrby(namespace_key(key), amount)
+      key = namespace_key(key)
+
+      @cache.incrby(key, amount).tap do
+        write_key_expiry(key)
+      end
     end
 
+    # Decrement a cached value. This method uses the Redis decr atomic operator.
+    #
+    # Calling it on a value not stored will initialize that value to zero.
     def decrement(key : K, amount = 1)
-      @cache.decrby(namespace_key(key), amount)
+      key = namespace_key(key)
+
+      @cache.decrby(key, amount).tap do
+        write_key_expiry(key)
+      end
     end
 
+    private def write_key_expiry(key : K)
+      @cache.expire(key, @expires_in.total_seconds.to_i)
+    end
+
+    # Clear the entire cache on all Redis servers.
+    # Safe to use on shared servers if the cache is namespaced.
     def clear
       if (namespace = @namespace)
         delete_matched("*", namespace)
@@ -85,6 +114,21 @@ module Cache
 
         break if cursor == "0"
       end
+    end
+
+    def redis
+      @cache
+    end
+
+    def inspect
+      "#<" +
+        [
+          self.class,
+          "redis=#{@cache.inspect}",
+          "expires_in=#{expires_in.to_s}",
+          "namespace=#{namespace.inspect}",
+        ].join(' ') +
+        ">"
     end
   end
 end
