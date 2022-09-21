@@ -125,7 +125,7 @@ module Cache
         [
           self.class,
           "redis=#{@cache.inspect}",
-          "expires_in=#{expires_in.to_s}",
+          "expires_in=#{expires_in.inspect}",
           "namespace=#{namespace.inspect}",
         ].join(' ') +
         ">"
