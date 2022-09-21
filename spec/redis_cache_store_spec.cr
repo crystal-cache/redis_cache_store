@@ -10,21 +10,21 @@ describe Cache do
     it "initialize" do
       store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours)
 
-      store.should be_a(Cache::Store(String, String))
+      store.should be_a(Cache::RedisCacheStore(String, String))
     end
 
     it "initialize with Redis" do
       redis = Redis.new(host: "localhost", port: 6379)
       store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, cache: redis)
 
-      store.should be_a(Cache::Store(String, String))
+      store.should be_a(Cache::RedisCacheStore(String, String))
     end
 
     it "initialize with Redis::PooledClient" do
       redis = Redis::PooledClient.new(host: "localhost", port: 6379, pool_size: 20)
       store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, cache: redis)
 
-      store.should be_a(Cache::Store(String, String))
+      store.should be_a(Cache::RedisCacheStore(String, String))
     end
 
     context "instance methods" do
