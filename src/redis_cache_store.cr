@@ -24,7 +24,18 @@ module Cache
   struct RedisCacheStore(K, V) < Store(K, V)
     @cache : Redis | Redis::PooledClient
 
-    def initialize(@expires_in : Time::Span, @cache = Redis::PooledClient.new)
+    # The maximum number of entries to receive per SCAN call.
+    SCAN_BATCH_SIZE = 1000
+
+    # Creates a new Redis cache store.
+    #
+    # No `namespace` is set by default. Provide one if the Redis cache
+    # server is shared with other apps:
+    #
+    # ```
+    # Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
+    # ```
+    def initialize(@expires_in : Time::Span, @cache = Redis::PooledClient.new, @namespace : String? = nil)
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
@@ -35,24 +46,45 @@ module Cache
       @cache.get(key)
     end
 
-    def delete(key : K) : Bool
+    def delete_impl(key : K) : Bool
       @cache.del(key) == 1_i64
     end
 
-    def exists?(key : K) : Bool
+    def exists_impl(key : K) : Bool
       @cache.exists(key) == 1
     end
 
     def increment(key : K, amount = 1)
-      @cache.incrby(key, amount)
+      @cache.incrby(namespace_key(key), amount)
     end
 
     def decrement(key : K, amount = 1)
-      @cache.decrby(key, amount)
+      @cache.decrby(namespace_key(key), amount)
     end
 
     def clear
-      @cache.flushdb
+      if (namespace = @namespace)
+        delete_matched("*", namespace)
+      else
+        @cache.flushdb
+      end
+    end
+
+    # `matcher` is Redis KEYS glob pattern.
+    #
+    # See https://redis.io/commands/keys/ for details
+    private def delete_matched(matcher : String, namespace : String)
+      parent = namespace_key(matcher)
+      cursor = "0"
+
+      loop do
+        # Fetch keys in batches using SCAN to avoid blocking the Redis server.
+        cursor, keys = @cache.scan(cursor, match: parent, count: SCAN_BATCH_SIZE)
+
+        @cache.del(keys)
+
+        break if cursor == "0"
+      end
     end
   end
 end

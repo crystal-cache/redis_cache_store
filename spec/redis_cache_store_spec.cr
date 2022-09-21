@@ -193,5 +193,48 @@ describe Cache do
 
       value.should eq("1")
     end
+
+    it "clear" do
+      store = Cache::RedisCacheStore(String, String).new(12.hours)
+
+      store.write("foo", "bar", expires_in: 1.minute)
+
+      store.clear
+
+      value = store.read("foo")
+      value.should be_nil
+    end
+
+    context "with namespace" do
+      it "write" do
+        store = Cache::RedisCacheStore(String, String).new(12.hours, namespace: "myapp-cache")
+        store.write("foo", "bar", expires_in: 1.minute)
+
+        value = store.fetch("foo") { "bar" }
+        value.should eq("bar")
+      end
+
+      it "clear" do
+        store = Cache::RedisCacheStore(String, String).new(12.hours, namespace: "myapp-cache")
+        other_store = Cache::RedisCacheStore(String, String).new(12.hours, namespace: "other-cache")
+
+        1001.times do |i|
+          store.write("#{i + 1}", "bar", expires_in: 1.minute)
+        end
+
+        other_store.write("foo", "bar", expires_in: 1.minute)
+
+        value = store.read("1001")
+        value.should eq("bar")
+
+        store.clear
+
+        value = store.read("1001")
+        value.should be_nil
+
+        other_value = other_store.read("foo")
+        other_value.should eq("bar")
+      end
+    end
   end
 end
