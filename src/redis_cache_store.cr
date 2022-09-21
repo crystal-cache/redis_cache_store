@@ -39,19 +39,19 @@ module Cache
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
-      @cache.set(namespace_key(key), value, expires_in.total_seconds.to_i)
+      @cache.set(key, value, expires_in.total_seconds.to_i)
     end
 
     private def read_impl(key : K)
-      @cache.get(namespace_key(key))
+      @cache.get(key)
     end
 
-    def delete(key : K) : Bool
-      @cache.del(namespace_key(key)) == 1_i64
+    def delete_impl(key : K) : Bool
+      @cache.del(key) == 1_i64
     end
 
-    def exists?(key : K) : Bool
-      @cache.exists(namespace_key(key)) == 1
+    def exists_impl(key : K) : Bool
+      @cache.exists(key) == 1
     end
 
     def increment(key : K, amount = 1)
@@ -84,14 +84,6 @@ module Cache
         @cache.del(keys)
 
         break if cursor == "0"
-      end
-    end
-
-    private def namespace_key(key : String) : String
-      if @namespace
-        "#{@namespace}:#{key}"
-      else
-        key
       end
     end
   end
