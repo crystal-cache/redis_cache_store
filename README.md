@@ -26,18 +26,23 @@ require "redis_cache_store"
 It's important to note that Redis cache value must be string.
 
 ```crystal
-cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute)
+cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
+# => #<Cache::RedisCacheStore(String, String) redis=#<Redis::PooledClient:0x7f0f1d2cf8c0 @pool=#<ConnectionPool(Redis):0x7f0f1d2e1af0 @r=#<IO::FileDescriptor: fd=11>, @w=#<IO::FileDescriptor: fd=12>, @capacity=5, @timeout=5.0, @buffer=Bytes[0], @size=0, ending=5, @pool=[], @block=#<Proc(Redis):0x562322895dd0:closure>, @connections=nil>> expires_in=00:01:00 namespace="myapp-cache>"
+
+# Fetches data from the Redis, using "myapp-cache:today" key. If there is data in
+# the Redis with the given key, then that data is returned.
+#
+# If there is no such data in the Redis (a cache miss or expired), then
+# block will be written to the Redis under the given cache key, and that
+# return value will be returned.
 cache.fetch("today") do
   Time.utc.day_of_week
 end
+# => Wednesday
 ```
 
 No `namespace` is set by default. Provide one if the Redis cache
 server is shared with other apps:
-
-```crystal
-Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
-```
 
 This assumes Redis was started with a default configuration, and is listening on localhost, port 6379.
 

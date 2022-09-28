@@ -7,24 +7,59 @@ describe Cache do
       redis.flushdb
     end
 
-    it "initialize" do
-      store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours)
+    context "#initialize" do
+      it "initialize" do
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours)
 
-      store.should be_a(Cache::Store(String, String))
+        store.should be_a(Cache::RedisCacheStore(String, String))
+      end
+
+      it "initialize with Redis" do
+        redis = Redis.new(host: "localhost", port: 6379)
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, cache: redis)
+
+        store.should be_a(Cache::RedisCacheStore(String, String))
+      end
+
+      it "initialize with Redis::PooledClient" do
+        redis = Redis::PooledClient.new(host: "localhost", port: 6379, pool_size: 20)
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, cache: redis)
+
+        store.should be_a(Cache::RedisCacheStore(String, String))
+      end
     end
 
-    it "initialize with Redis" do
-      redis = Redis.new(host: "localhost", port: 6379)
-      store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, cache: redis)
+    context "instance methods" do
+      it "#inspect without namescape" do
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours)
 
-      store.should be_a(Cache::Store(String, String))
-    end
+        store.inspect.should match(
+          /\A#<Cache\:\:RedisCacheStore\(String, String\) redis=#<Redis\:\:PooledClient\:0x.*expires_in=12:00:00.*namespace=nil>\z/
+        )
+      end
 
-    it "initialize with Redis::PooledClient" do
-      redis = Redis::PooledClient.new(host: "localhost", port: 6379, pool_size: 20)
-      store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, cache: redis)
+      it "#inspect with namescape" do
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, namespace: "myapp-cache")
 
-      store.should be_a(Cache::Store(String, String))
+        store.inspect.should match(
+          /\A#<Cache\:\:RedisCacheStore\(String, String\) redis=#<Redis\:\:PooledClient\:0x.*expires_in=12:00:00.*namespace=\"myapp-cache\">\z/
+        )
+      end
+
+      it "#redis" do
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours)
+        store.redis.should be_a(Redis::PooledClient)
+      end
+
+      it "#expires_in" do
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours)
+        store.expires_in.should eq(12.hours)
+      end
+
+      it "#namespace" do
+        store = Cache::RedisCacheStore(String, String).new(expires_in: 12.hours, namespace: "myapp-cache")
+        store.namespace.should eq("myapp-cache")
+      end
     end
 
     it "write to cache first time" do
@@ -190,6 +225,16 @@ describe Cache do
       store.decrement("num", 1)
 
       value = store.read("num")
+
+      value.should eq("1")
+    end
+
+    it "#increment non-existent value" do
+      store = Cache::RedisCacheStore(String, Int32).new(12.hours)
+
+      store.increment("undef_num", 1)
+
+      value = store.read("undef_num")
 
       value.should eq("1")
     end
