@@ -1,5 +1,6 @@
 require "cache"
 require "redis"
+require "./ext/redis"
 
 module Cache
   # A cache store implementation which stores data in Redis.
@@ -20,16 +21,16 @@ module Cache
   #
   # This assumes Redis was started with a default configuration, and is listening on localhost, port 6379.
   #
-  # You can connect to Redis by instantiating the `Redis` or `Redis::PooledClient` class.
+  # You can connect to Redis by instantiating the `Redis::Client` class.
   #
   # If you need to connect to a remote server or a different port, try:
   #
   # ```
-  # redis = Redis.new(host: "10.0.1.1", port: 6380, password: "my-secret-pw", database: 1)
+  # redis = Redis::Client.new(host: "10.0.1.1", port: 6380, password: "my-secret-pw", database: 1)
   # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, cache: redis)
   # ```
   struct RedisCacheStore(K, V) < Store(K, V)
-    @cache : Redis | Redis::PooledClient
+    @cache : Redis::Client
 
     # The maximum number of entries to receive per SCAN call.
     private SCAN_BATCH_SIZE = 1000
@@ -44,11 +45,11 @@ module Cache
     # ```
     # Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
     # ```
-    def initialize(@expires_in : Time::Span, @cache = Redis::PooledClient.new, @namespace : String? = nil)
+    def initialize(@expires_in : Time::Span, @cache = Redis::Client.new, @namespace : String? = nil)
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
-      @cache.set(key, value, expires_in.total_seconds.to_i)
+      @cache.set(key, value.to_s, expires_in.total_seconds.to_i)
     end
 
     private def read_impl(key : K)
@@ -107,8 +108,10 @@ module Cache
       cursor = "0"
 
       loop do
-        # Fetch keys in batches using SCAN to avoid blocking the Redis server.
-        cursor, keys = @cache.scan(cursor, match: parent, count: SCAN_BATCH_SIZE)
+        cursor, keys = @cache.scan(cursor, match: parent, count: SCAN_BATCH_SIZE).as(Array(Redis::Value))
+
+        cursor = cursor.as(String)
+        keys = keys.as(Array(Redis::Value)).map(&.to_s)
 
         @cache.del(keys)
 
