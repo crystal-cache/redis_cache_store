@@ -26,7 +26,8 @@ module Cache
   # If you need to connect to a remote server or a different port, try:
   #
   # ```
-  # redis = Redis::Client.new(host: "10.0.1.1", port: 6380, password: "my-secret-pw", database: 1)
+  # redis_uri = URI.parse("rediss://:my-secret-pw@10.0.1.1:6380/1")
+  # redis = Redis::Client.new(uri: redis_uri)
   # cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, cache: redis)
   # ```
   struct RedisCacheStore(K, V) < Store(K, V)
