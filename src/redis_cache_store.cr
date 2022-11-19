@@ -1,6 +1,5 @@
 require "cache"
 require "redis"
-require "./ext/redis"
 
 module Cache
   # A cache store implementation which stores data in Redis.
