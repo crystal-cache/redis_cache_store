@@ -3,7 +3,11 @@
 ![Crystal CI](https://github.com/crystal-cache/redis_cache_store/workflows/Crystal%20CI/badge.svg)
 [![GitHub release](https://img.shields.io/github/release/crystal-cache/redis_cache_store.svg)](https://github.com/crystal-cache/redis_cache_store/releases)
 
-A [cache](https://github.com/crystal-cache/cache) store implementation that stores data in Redis
+A [cache](https://github.com/crystal-cache/cache) store implementation that stores data in Redis.
+
+This shard using [jgaskins/redis](https://github.com/jgaskins/redis) as Redis client library.
+
+If you're looking for an implementation that uses [stefanwille/crystal-redis](https://github.com/stefanwille/crystal-redis) check https://github.com/crystal-cache/redis_legacy_cache_store.
 
 ## Installation
 
