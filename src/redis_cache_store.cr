@@ -67,7 +67,7 @@ module Cache
     # Clear the entire cache on all Redis servers.
     # Safe to use on shared servers if the cache is namespaced.
     def clear
-      if (namespace = @namespace)
+      if namespace = @namespace
         delete_matched("*", namespace)
       else
         @cache.flushdb
