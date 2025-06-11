@@ -49,7 +49,7 @@ module Cache
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
-      @cache.set(key, value.to_s, expires_in.total_seconds.to_i)
+      @cache.set(key, value.to_s, ex: expires_in)
     end
 
     private def read_impl(key : K)
