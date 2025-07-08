@@ -150,7 +150,11 @@ describe Cache do
       store = Cache::RedisCacheStore(String, String).new(12.hours)
       store.write("foo", "bar", expires_in: 1.second)
 
+      store.keys.should eq(Set{"foo"})
+
       sleep 2.seconds
+
+      store.keys.should be_empty
 
       value = store.read("foo")
       value.should eq(nil)
@@ -167,7 +171,7 @@ describe Cache do
 
       value = store.read("foo")
       value.should eq(nil)
-      store.keys.should eq(Set(String).new)
+      store.keys.should be_empty
     end
 
     it "deletes all items from the cache" do
@@ -247,10 +251,16 @@ describe Cache do
 
     context "with namespace" do
       it "write" do
-        store = Cache::RedisCacheStore(String, String).new(12.hours, namespace: "myapp-cache")
-        store.write("foo", "bar", expires_in: 1.minute)
+        store1 = Cache::RedisCacheStore(String, String).new(12.hours, namespace: "myapp-cache")
+        store1.write("foo1", "bar", expires_in: 1.minute)
 
-        value = store.fetch("foo") { "bar" }
+        store2 = Cache::RedisCacheStore(String, String).new(12.hours)
+        store2.write("foo2", "baz", expires_in: 1.minute)
+
+        store1.keys.should eq(Set{"myapp-cache:foo1"})
+        store2.keys.should eq(Set{"myapp-cache:foo1", "foo2"})
+
+        value = store1.fetch("foo") { "bar" }
         value.should eq("bar")
       end
 

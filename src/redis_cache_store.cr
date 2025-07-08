@@ -48,6 +48,11 @@ module Cache
     def initialize(@expires_in : Time::Span, @cache = Redis::Client.new, @namespace : String? = nil)
     end
 
+    def keys : Set(K)
+      pattern = namespace_key("*")
+      redis.keys(pattern).map(&.as(K)).to_set
+    end
+
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
       redis.set(key, value.to_s, ex: expires_in)
     end
