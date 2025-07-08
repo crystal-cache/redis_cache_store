@@ -49,19 +49,19 @@ module Cache
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)
-      @cache.set(key, value.to_s, ex: expires_in)
+      redis.set(key, value.to_s, ex: expires_in)
     end
 
     private def read_impl(key : K)
-      @cache.get(key)
+      redis.get(key)
     end
 
     def delete_impl(key : K) : Bool
-      @cache.del(key) == 1_i64
+      redis.del(key) == 1_i64
     end
 
     def exists_impl(key : K) : Bool
-      @cache.exists(key) == 1
+      redis.exists(key) == 1
     end
 
     # Clear the entire cache on all Redis servers.
@@ -70,7 +70,7 @@ module Cache
       if namespace = @namespace
         delete_matched("*", namespace)
       else
-        @cache.flushdb
+        redis.flushdb
       end
     end
 
@@ -80,7 +80,7 @@ module Cache
     def increment(key : K, amount = 1)
       key = namespace_key(key)
 
-      @cache.incrby(key, amount).tap do
+      redis.incrby(key, amount).tap do
         write_key_expiry(key)
       end
     end
@@ -91,13 +91,13 @@ module Cache
     def decrement(key : K, amount = 1)
       key = namespace_key(key)
 
-      @cache.decrby(key, amount).tap do
+      redis.decrby(key, amount).tap do
         write_key_expiry(key)
       end
     end
 
     private def write_key_expiry(key : K)
-      @cache.expire(key, @expires_in.total_seconds.to_i)
+      redis.expire(key, @expires_in.total_seconds.to_i)
     end
 
     # `matcher` is Redis KEYS glob pattern.
@@ -109,12 +109,12 @@ module Cache
 
       loop do
         # Fetch keys in batches using SCAN to avoid blocking the Redis server.
-        cursor, keys = @cache.scan(cursor, match: parent, count: SCAN_BATCH_SIZE).as(Array(Redis::Value))
+        cursor, keys = redis.scan(cursor, match: parent, count: SCAN_BATCH_SIZE).as(Array(Redis::Value))
 
         cursor = cursor.as(String)
         keys = keys.as(Array(Redis::Value)).map(&.to_s)
 
-        @cache.del(keys)
+        redis.del(keys)
 
         break if cursor == "0"
       end
@@ -128,7 +128,7 @@ module Cache
       "#<" +
         [
           self.class,
-          "redis=#{@cache.inspect}",
+          "redis=#{redis.inspect}",
           "expires_in=#{expires_in.inspect}",
           "namespace=#{namespace.inspect}",
         ].join(' ') +
