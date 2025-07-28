@@ -50,7 +50,11 @@ module Cache
 
     def keys : Set(K)
       pattern = namespace_key("*")
-      redis.keys(pattern).map(&.as(K)).to_set
+      if namespace = @namespace
+        redis.keys(pattern).map(&.as(K).sub(namespace + ':', "")).to_set
+      else
+        redis.keys(pattern).map(&.as(K)).to_set
+      end
     end
 
     private def write_impl(key : K, value : V, *, expires_in = @expires_in)

@@ -255,10 +255,10 @@ describe Cache do
         store1.write("foo1", "bar", expires_in: 1.minute)
 
         store2 = Cache::RedisCacheStore(String, String).new(12.hours)
-        store2.write("foo2", "baz", expires_in: 1.minute)
+        store2.write("foo1", "baz", expires_in: 1.minute)
 
-        store1.keys.should eq(Set{"myapp-cache:foo1"})
-        store2.keys.should eq(Set{"myapp-cache:foo1", "foo2"})
+        store1.keys.should eq(Set{"foo1"})
+        store2.keys.should eq(Set{"myapp-cache:foo1", "foo1"})
 
         value = store1.fetch("foo") { "bar" }
         value.should eq("bar")
