@@ -38,10 +38,19 @@ cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespa
 # If there is no such data in the Redis (a cache miss or expired), then
 # block will be written to the Redis under the given cache key, and that
 # return value will be returned.
-cache.fetch("today") do
-  Time.utc.day_of_week
-end
-# => Wednesday
+day_of_week = cache.fetch("today") { Time.utc.day_of_week.to_s }
+
+p! day_of_week # => "Wednesday"
+
+# Store a value in the cache
+cache.write("greeting", "Hello, world!")
+
+# Retrieve the value from the cache
+greeting = cache.read("greeting")
+puts greeting # Output: Hello, world!
+
+# Delete a value from the cache
+cache.delete("greeting")
 ```
 
 No `namespace` is set by default. Provide one if the Redis cache
