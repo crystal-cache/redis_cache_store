@@ -123,6 +123,8 @@ module Cache
         cursor = cursor.as(String)
         keys = keys.as(Array(Redis::Value)).map(&.to_s)
 
+        next if keys.empty?
+
         redis.del(keys)
 
         break if cursor == "0"
