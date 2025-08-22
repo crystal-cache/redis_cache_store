@@ -7,7 +7,8 @@ authors:
 dependencies:
   cache:
     github: crystal-cache/cache
-    version: ">= 0.15.0"
+    branch: cache-v2
+    # version: ">= 1.0.0"
   redis:
     github: jgaskins/redis
 
