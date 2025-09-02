@@ -30,7 +30,7 @@ require "redis_cache_store"
 It's important to note that Redis cache value must be string.
 
 ```crystal
-cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, namespace: "myapp-cache")
+cache = Cache::RedisCacheStore(String).new(expires_in: 1.minute, namespace: "myapp-cache")
 
 # Fetches data from the Redis, using "myapp-cache:today" key. If there is data in
 # the Redis with the given key, then that data is returned.
@@ -65,7 +65,7 @@ If you need to connect to a remote server or a different port, try:
 ```crystal
 redis_uri = URI.parse("rediss://:my-secret-pw@10.0.1.1:6380/1")
 redis = Redis::Client.new(uri: redis_uri)
-cache = Cache::RedisCacheStore(String, String).new(expires_in: 1.minute, cache: redis)
+cache = Cache::RedisCacheStore(String).new(expires_in: 1.minute, cache: redis)
 ```
 
 ## Contributing
