@@ -23,6 +23,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v5
 
+      # Performs a clean installation of all dependencies in the `shard.yml` file
       - name: Install dependencies
         run: shards install
 
@@ -51,13 +52,11 @@ jobs:
         uses: oprypin/install-crystal@v1
         with:
           crystal: ${{ matrix.crystal }}
-      # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      # Performs a clean installation of all dependencies in the `shard.yml` file
       - name: Install dependencies
-        run: shards install
+        run: shards install --skip-postinstall --skip-executables
 
       - name: Run tests
         run: crystal spec
