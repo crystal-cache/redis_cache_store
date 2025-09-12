@@ -14,9 +14,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      - name: Install dependencies
-        run: shards install
-
       - name: Check format
         run: crystal tool format --check
   check_ameba:
