@@ -28,6 +28,7 @@ require "redis_cache_store"
 ```
 
 Redis cache values are stored as strings. Values passed to `write` are converted with `to_s`, and reads return Redis strings.
+Use a positive `expires_in` value. Redis-backed entries with zero or negative expiration are not kept.
 
 ```crystal
 cache = Cache::RedisCacheStore(String).new(expires_in: 1.minute, namespace: "myapp-cache")
