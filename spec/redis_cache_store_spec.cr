@@ -264,6 +264,19 @@ describe Cache do
       value.should be_nil
     end
 
+    it "clear flushes the selected Redis database without namespace" do
+      store = Cache::RedisCacheStore(String).new(12.hours)
+      namespaced_store = Cache::RedisCacheStore(String).new(12.hours, namespace: "myapp-cache")
+
+      store.write("foo", "bar", expires_in: 1.minute)
+      namespaced_store.write("foo", "bar", expires_in: 1.minute)
+
+      store.clear
+
+      store.read("foo").should be_nil
+      namespaced_store.read("foo").should be_nil
+    end
+
     context "with namespace" do
       it "write" do
         store1 = Cache::RedisCacheStore(String).new(12.hours, namespace: "myapp-cache")
@@ -288,6 +301,19 @@ describe Cache do
         store2.write("foo", "bar", expires_in: 1.minute)
 
         store1.keys.should eq(Set{"foo", "baz"})
+      end
+
+      it "delete only removes entries from the current namespace" do
+        store = Cache::RedisCacheStore(String).new(12.hours, namespace: "myapp-cache")
+        other_store = Cache::RedisCacheStore(String).new(12.hours, namespace: "other-cache")
+
+        store.write("foo", "bar", expires_in: 1.minute)
+        other_store.write("foo", "baz", expires_in: 1.minute)
+
+        store.delete("foo").should be_true
+
+        store.read("foo").should be_nil
+        other_store.read("foo").should eq("baz")
       end
 
       it "clear" do
