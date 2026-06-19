@@ -8,13 +8,13 @@ module Cache
   # cache = Cache::RedisCacheStore(String).new(expires_in: 1.minute, namespace: "myapp-cache")
   #
   # # Fetches data from the Redis, using "myapp-cache:today" key. If there is data in
-  # # the REdis with the given key, then that data is returned.
+  # # the Redis with the given key, then that data is returned.
   # #
   # # If there is no such data in the Redis (a cache miss or expired), then
   # # block will be written to the Redis under the given cache key, and that
   # # return value will be returned.
   # cache.fetch("today") do
-  #   Time.utc.day_of_week
+  #   Time.utc.day_of_week.to_s
   # end
   # ```
   #

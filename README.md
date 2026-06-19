@@ -5,7 +5,7 @@
 
 A [cache](https://github.com/crystal-cache/cache) store implementation that stores data in Redis.
 
-This shard using [jgaskins/redis](https://github.com/jgaskins/redis) as Redis client library.
+This shard uses [jgaskins/redis](https://github.com/jgaskins/redis) as the Redis client library.
 
 If you're looking for an implementation that uses [stefanwille/crystal-redis](https://github.com/stefanwille/crystal-redis) check https://github.com/crystal-cache/redis_legacy_cache_store.
 
@@ -27,7 +27,7 @@ If you're looking for an implementation that uses [stefanwille/crystal-redis](ht
 require "redis_cache_store"
 ```
 
-It's important to note that Redis cache value must be string.
+Redis cache values are stored as strings. Values passed to `write` are converted with `to_s`, and reads return Redis strings.
 
 ```crystal
 cache = Cache::RedisCacheStore(String).new(expires_in: 1.minute, namespace: "myapp-cache")
@@ -40,7 +40,7 @@ cache = Cache::RedisCacheStore(String).new(expires_in: 1.minute, namespace: "mya
 # return value will be returned.
 day_of_week = cache.fetch("today") { Time.utc.day_of_week.to_s }
 
-p! day_of_week # => "Wednesday"
+puts day_of_week # => Wednesday
 
 # Store a value in the cache
 cache.write("greeting", "Hello, world!")
