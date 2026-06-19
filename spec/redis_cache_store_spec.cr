@@ -157,7 +157,7 @@ describe Cache do
       store.keys.should be_empty
 
       value = store.read("foo")
-      value.should eq(nil)
+      value.should be_nil
     end
 
     it "delete from cache" do
@@ -167,10 +167,10 @@ describe Cache do
       value.should eq("bar")
 
       result = store.delete("foo")
-      result.should eq(true)
+      result.should be_true
 
       value = store.read("foo")
-      value.should eq(nil)
+      value.should be_nil
       store.keys.should be_empty
     end
 
@@ -183,7 +183,7 @@ describe Cache do
       store.clear
 
       value = store.read("foo")
-      value.should eq(nil)
+      value.should be_nil
       store.keys.should be_empty
     end
 
@@ -192,8 +192,8 @@ describe Cache do
 
       store.write("foo", "bar")
 
-      store.exists?("foo").should eq(true)
-      store.exists?("foz").should eq(false)
+      store.exists?("foo").should be_true
+      store.exists?("foz").should be_false
     end
 
     it "#exists? expires" do
@@ -203,7 +203,7 @@ describe Cache do
 
       sleep 2.seconds
 
-      store.exists?("foo").should eq(false)
+      store.exists?("foo").should be_false
     end
 
     it "#increment" do
