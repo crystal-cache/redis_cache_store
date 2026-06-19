@@ -174,6 +174,12 @@ describe Cache do
       store.keys.should be_empty
     end
 
+    it "returns false when deleting a missing key" do
+      store = Cache::RedisCacheStore(String).new(12.hours)
+
+      store.delete("missing").should be_false
+    end
+
     it "deletes all items from the cache" do
       store = Cache::RedisCacheStore(String).new(12.hours)
 
