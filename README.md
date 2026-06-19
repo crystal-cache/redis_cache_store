@@ -28,6 +28,7 @@ require "redis_cache_store"
 ```
 
 Redis cache values are stored as strings. Values passed to `write` are converted with `to_s`, and reads return Redis strings.
+Serialize complex values in your application before writing them, for example with JSON, and deserialize them after reading.
 Use a positive `expires_in` value. Redis-backed entries with zero or negative expiration are not kept.
 
 ```crystal
@@ -56,6 +57,17 @@ cache.delete("greeting")
 
 No `namespace` is set by default. Provide one if the Redis cache
 server is shared with other apps:
+
+```crystal
+cache = Cache::RedisCacheStore(String).new(expires_in: 1.minute, namespace: "myapp-cache")
+```
+
+`clear` removes entries differently depending on namespace configuration:
+
+* without a namespace, `clear` calls `FLUSHDB` and removes every key in the selected Redis database
+* with a namespace, `clear` scans and deletes only keys matching that namespace
+
+`keys` and namespaced `clear` use Redis `SCAN` internally instead of `KEYS`, so they avoid blocking Redis while iterating large keyspaces.
 
 This assumes Redis was started with a default configuration, and is listening on localhost, port 6379.
 
