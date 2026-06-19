@@ -50,11 +50,11 @@ module Cache
 
     def keys : Set(String)
       pattern = namespace_key("*")
-      if namespace = @namespace
-        redis.keys(pattern).map(&.as(String).sub(namespace + ':', "")).to_set
-      else
-        redis.keys(pattern).map(&.as(String)).to_set
-      end
+      keys = scan_keys(pattern)
+
+      return keys.to_set unless namespace = @namespace
+
+      keys.map(&.sub(namespace + ':', "")).to_set
     end
 
     private def write_impl(key : String, value : V, *, expires_in = @expires_in)
@@ -113,17 +113,30 @@ module Cache
     #
     # See https://redis.io/commands/keys/ for details
     private def delete_matched(matcher : String)
-      parent = namespace_key(matcher)
+      scan_keys(namespace_key(matcher)) do |keys|
+        redis.del(keys) unless keys.empty?
+      end
+    end
+
+    private def scan_keys(matcher : String) : Array(String)
+      keys = [] of String
+
+      scan_keys(matcher) do |entries|
+        keys.concat(entries)
+      end
+
+      keys
+    end
+
+    private def scan_keys(matcher : String, &)
       cursor = "0"
 
       loop do
         # Fetch keys in batches using SCAN to avoid blocking the Redis server.
-        cursor, keys = redis.scan(cursor, match: parent, count: SCAN_BATCH_SIZE).as(Array(Redis::Value))
+        cursor, entries = redis.scan(cursor, match: matcher, count: SCAN_BATCH_SIZE).as(Array(Redis::Value))
 
         cursor = cursor.as(String)
-        keys = keys.as(Array(Redis::Value)).map(&.to_s)
-
-        redis.del(keys) unless keys.empty?
+        yield entries.as(Array(Redis::Value)).map(&.to_s)
 
         break if cursor == "0"
       end

@@ -206,6 +206,15 @@ describe Cache do
       store.exists?("foo").should be_false
     end
 
+    it "#keys" do
+      store = Cache::RedisCacheStore(String).new(12.hours)
+
+      store.write("foo", "bar")
+      store.write("baz", "qux")
+
+      store.keys.should eq(Set{"foo", "baz"})
+    end
+
     it "#increment" do
       store = Cache::RedisCacheStore(Int32).new(12.hours)
 
@@ -262,6 +271,17 @@ describe Cache do
 
         value = store1.fetch("foo") { "bar" }
         value.should eq("bar")
+      end
+
+      it "keys" do
+        store1 = Cache::RedisCacheStore(String).new(12.hours, namespace: "myapp-cache")
+        store2 = Cache::RedisCacheStore(String).new(12.hours, namespace: "other-cache")
+
+        store1.write("foo", "bar", expires_in: 1.minute)
+        store1.write("baz", "qux", expires_in: 1.minute)
+        store2.write("foo", "bar", expires_in: 1.minute)
+
+        store1.keys.should eq(Set{"foo", "baz"})
       end
 
       it "clear" do
