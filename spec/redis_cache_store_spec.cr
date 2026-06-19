@@ -285,6 +285,17 @@ describe Cache do
         other_value = other_store.read("foo")
         other_value.should eq("bar")
       end
+
+      it "clear with no matching keys" do
+        store = Cache::RedisCacheStore(String).new(12.hours, namespace: "myapp-cache")
+        other_store = Cache::RedisCacheStore(String).new(12.hours, namespace: "other-cache")
+
+        other_store.write("foo", "bar", expires_in: 1.minute)
+
+        store.clear
+
+        other_store.read("foo").should eq("bar")
+      end
     end
   end
 end

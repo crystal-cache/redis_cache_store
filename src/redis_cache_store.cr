@@ -76,8 +76,8 @@ module Cache
     # Clear the entire cache on all Redis servers.
     # Safe to use on shared servers if the cache is namespaced.
     def clear
-      if namespace = @namespace
-        delete_matched("*", namespace)
+      if @namespace
+        delete_matched("*")
       else
         redis.flushdb
       end
@@ -112,7 +112,7 @@ module Cache
     # `matcher` is Redis KEYS glob pattern.
     #
     # See https://redis.io/commands/keys/ for details
-    private def delete_matched(matcher : String, namespace : String)
+    private def delete_matched(matcher : String)
       parent = namespace_key(matcher)
       cursor = "0"
 
@@ -123,9 +123,7 @@ module Cache
         cursor = cursor.as(String)
         keys = keys.as(Array(Redis::Value)).map(&.to_s)
 
-        next if keys.empty?
-
-        redis.del(keys)
+        redis.del(keys) unless keys.empty?
 
         break if cursor == "0"
       end
